@@ -2,6 +2,7 @@
 
 namespace Polygon;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Polygon\Repositories\ProductRepository;
 
@@ -12,9 +13,16 @@ class ProductServiceTest extends TestCase
      */
     private $productService;
 
+    /**
+     * @var MockObject|ProductRepository
+     */
+    private $productRepositoryMock;
+
     protected function setUp(): void
     {
-        $this->productService = new ProductService(new ProductRepository());
+        $this->productRepositoryMock = $this->createMock(ProductRepository::class);
+        $this->productService = new ProductService($this->productRepositoryMock);
+
         parent::setUp();
     }
 
@@ -26,6 +34,14 @@ class ProductServiceTest extends TestCase
 
     public function testGetProductShortInfo()
     {
+        $this->productRepositoryMock
+            ->method('getProductInfoById')
+            ->willReturn([
+                'model' => 'ThinkPad E495',
+                'type' => 'notebook',
+                'manufacturer' => 'Lenovo',
+            ]);
+
         $productInfo = $this->productService->getProductInfo(1);
 
         $this->assertJsonStringEqualsJsonString(
@@ -40,6 +56,14 @@ class ProductServiceTest extends TestCase
 
     public function testGetSecondProductShortInfo()
     {
+        $this->productRepositoryMock
+            ->method('getProductInfoById')
+            ->willReturn([
+                'model' => 'MacBook Pro',
+                'type' => 'notebook',
+                'manufacturer' => 'Apple',
+            ]);
+
         $productInfo = $this->productService->getProductInfo(2);
 
         $this->assertJsonStringEqualsJsonString(
@@ -54,6 +78,9 @@ class ProductServiceTest extends TestCase
 
     public function testNonExistProduct()
     {
+        $this->productRepositoryMock
+            ->method('getProductInfoById')
+            ->willThrowException(new \DomainException('Product not exist'));
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage("Product not exist");
 
