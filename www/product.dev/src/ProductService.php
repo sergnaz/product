@@ -6,6 +6,13 @@ use Polygon\Repositories\ProductRepository;
 
 class ProductService
 {
+    private $productRepo;
+
+    public function __construct(ProductRepository $productRepository)
+    {
+        $this->productRepo = $productRepository;
+    }
+
     /**
      * @param int $productId
      * @throws \DomainException
@@ -20,12 +27,11 @@ class ProductService
 
     /**
      * @param int $productId
+     * @throws \DomainException
      * @return array
      */
     private function getProductInfoById(int $productId): array
     {
-        $productRepo = new ProductRepository();
-
-        return $productRepo->getProductInfoById($productId);
+        return $this->productRepo->getProductInfoById($productId);
     }
 }

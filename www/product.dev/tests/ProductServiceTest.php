@@ -3,6 +3,7 @@
 namespace Polygon;
 
 use PHPUnit\Framework\TestCase;
+use Polygon\Repositories\ProductRepository;
 
 class ProductServiceTest extends TestCase
 {
@@ -13,7 +14,7 @@ class ProductServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->productService = new ProductService();
+        $this->productService = new ProductService(new ProductRepository());
         parent::setUp();
     }
 

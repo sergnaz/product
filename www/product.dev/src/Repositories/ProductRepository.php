@@ -6,10 +6,12 @@ class ProductRepository
 {
     /**
      * @param int $productId
+     * @throws \DomainException
      * @return array
      */
     public function getProductInfoById(int $productId): array
     {
+        //TODO: Hardcoded, we should use some kind of real storage ... but it will be later
         if ($productId == 1) {
             $productData = [
                 'model' => 'ThinkPad E495',
