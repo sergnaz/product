@@ -41,40 +41,58 @@ class ProductServiceTest extends TestCase
         parent::tearDown();
     }
 
-    public function testGetProductShortInfo()
+    /**
+     * @return array
+     */
+    public function shortInfoDataProvider()
     {
-        //Arrange
-        $this->productRepositoryWillReturnLenovo();
-
-        //Act
-        $productInfo = $this->productService->getProductInfo(self::LENOVO_PRODUCT_ID);
-
-        //Assert
-        $this->assertJsonStringEqualsJsonString(
-            json_encode([
-                'model' => 'ThinkPad E495',
-                'type' => 'notebook',
-                'manufacturer' => 'Lenovo',
-            ]),
-            $productInfo
-        );
+        return [
+            [
+                self::LENOVO_PRODUCT_ID,
+                [
+                    'model' => 'ThinkPad E495',
+                    'type' => 'notebook',
+                    'manufacturer' => 'Lenovo',
+                ],
+                json_encode([
+                    'model' => 'ThinkPad E495',
+                    'type' => 'notebook',
+                    'manufacturer' => 'Lenovo',
+                ]),
+            ],
+            [
+                self::APPLE_PRODUCT_ID,
+                [
+                    'model' => 'MacBook Pro',
+                    'type' => 'notebook',
+                    'manufacturer' => 'Apple',
+                ],
+                json_encode([
+                    'model' => 'MacBook Pro',
+                    'type' => 'notebook',
+                    'manufacturer' => 'Apple',
+                ]),
+            ]
+        ];
     }
 
-    public function testGetSecondProductShortInfo()
+    /**
+     * @dataProvider shortInfoDataProvider
+     * @param $productId
+     * @param $product
+     * @param $expectedProduct
+     */
+    public function testGetProductShortInfo($productId, $product, $expectedProduct)
     {
         //Arrange
-        $this->productRepositoryWillReturnApple();
+        $this->productRepositoryWillReturn($product);
 
         //Act
-        $productInfo = $this->productService->getProductInfo(self::APPLE_PRODUCT_ID);
+        $productInfo = $this->productService->getProductInfo($productId);
 
         //Assert
         $this->assertJsonStringEqualsJsonString(
-            json_encode([
-                'model' => 'MacBook Pro',
-                'type' => 'notebook',
-                'manufacturer' => 'Apple',
-            ]),
+            $expectedProduct,
             $productInfo
         );
     }
@@ -92,26 +110,11 @@ class ProductServiceTest extends TestCase
         $this->productService->getProductInfo(self::NOT_FOUND_PRODUCT_ID);
     }
 
-    private function productRepositoryWillReturnLenovo(): void
+    private function productRepositoryWillReturn($product): void
     {
         $this->productRepositoryMock
             ->method(self::getProductInfoByIdMethod)
-            ->willReturn([
-                'model' => 'ThinkPad E495',
-                'type' => 'notebook',
-                'manufacturer' => 'Lenovo',
-            ]);
-    }
-
-    private function productRepositoryWillReturnApple(): void
-    {
-        $this->productRepositoryMock
-            ->method(self::getProductInfoByIdMethod)
-            ->willReturn([
-                'model' => 'MacBook Pro',
-                'type' => 'notebook',
-                'manufacturer' => 'Apple',
-            ]);
+            ->willReturn($product);
     }
 
     private function productRepositoryWillThrowNotFountException(): void
