@@ -4,6 +4,7 @@ namespace Polygon;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Polygon\Entities\Product;
 use Polygon\Repositories\ProductRepository;
 
 class ProductServiceTest extends TestCase
@@ -46,6 +47,16 @@ class ProductServiceTest extends TestCase
      */
     public function shortInfoDataProvider()
     {
+        $productLenovo = new Product();
+        $productLenovo->model = 'ThinkPad E495';
+        $productLenovo->type = 'notebook';
+        $productLenovo->manufacturer = 'Lenovo';
+
+        $productApple = new Product();
+        $productApple->model = 'MacBook Pro';
+        $productApple->type = 'notebook';
+        $productApple->manufacturer = 'Apple';
+
         return [
             [
                 self::LENOVO_PRODUCT_ID,
@@ -54,11 +65,7 @@ class ProductServiceTest extends TestCase
                     'type' => 'notebook',
                     'manufacturer' => 'Lenovo',
                 ],
-                json_encode([
-                    'model' => 'ThinkPad E495',
-                    'type' => 'notebook',
-                    'manufacturer' => 'Lenovo',
-                ]),
+                $productLenovo,
             ],
             [
                 self::APPLE_PRODUCT_ID,
@@ -67,11 +74,7 @@ class ProductServiceTest extends TestCase
                     'type' => 'notebook',
                     'manufacturer' => 'Apple',
                 ],
-                json_encode([
-                    'model' => 'MacBook Pro',
-                    'type' => 'notebook',
-                    'manufacturer' => 'Apple',
-                ]),
+                $productApple,
             ]
         ];
     }
@@ -82,7 +85,7 @@ class ProductServiceTest extends TestCase
      * @param $product
      * @param $expectedProduct
      */
-    public function testGetProductShortInfo($productId, $product, $expectedProduct)
+    public function testGetProductShortInfo($productId, $product, Product $expectedProduct)
     {
         //Arrange
         $this->productRepositoryWillReturn($product);
@@ -91,7 +94,7 @@ class ProductServiceTest extends TestCase
         $productInfo = $this->productService->getProductInfo($productId);
 
         //Assert
-        $this->assertJsonStringEqualsJsonString(
+        $this->assertEquals(
             $expectedProduct,
             $productInfo
         );

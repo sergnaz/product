@@ -8,4 +8,6 @@ include 'vendor/autoload.php';
     $product = new ProductService(new ProductRepository());
 
     header('Content-Type: application/json');
-    echo $product->getProductInfo(1);
+    $product = $product->getProductInfo(2);
+
+    echo json_encode($product);

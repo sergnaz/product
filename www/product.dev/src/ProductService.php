@@ -2,6 +2,7 @@
 
 namespace Polygon;
 
+use Polygon\Entities\Product;
 use Polygon\Repositories\ProductRepository;
 
 class ProductService
@@ -16,13 +17,18 @@ class ProductService
     /**
      * @param int $productId
      * @throws \DomainException
-     * @return false|string
+     * @return Product
      */
-    public function getProductInfo(int $productId): string
+    public function getProductInfo(int $productId): Product
     {
         $productData = $this->getProductInfoById($productId);
 
-        return json_encode($productData);
+        $product = new Product();
+        $product->model = $productData['model'];
+        $product->type = $productData['type'];
+        $product->manufacturer = $productData['manufacturer'];
+
+        return $product;
     }
 
     /**
