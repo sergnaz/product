@@ -2,7 +2,7 @@
     127.0.0.1 product.dev
 1. docker-compose up -d
 2. ./vendor/bin/phpunit tests
-3. http://product.dev/1/json
+3. http://product.dev/ or curl -i http://product.dev/ ;echo
     {
             'model' : 'ThinkPad E495',
             'type' : 'notebook',

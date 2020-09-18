@@ -2,7 +2,7 @@
 
 namespace Polygon\Repositories;
 
-class ProductRepository
+class ProductInfoRepository
 {
     /**
      * @param int $productId

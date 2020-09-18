@@ -3,15 +3,27 @@
 namespace Polygon;
 
 use Polygon\Entities\Product;
-use Polygon\Repositories\ProductRepository;
+use Polygon\Repositories\ProductDescriptionRepository;
+use Polygon\Repositories\ProductInfoRepository;
 
 class ProductService
 {
-    private $productRepo;
+    /**
+     * @var ProductInfoRepository
+     */
+    private $infoRepository;
 
-    public function __construct(ProductRepository $productRepository)
-    {
-        $this->productRepo = $productRepository;
+    /**
+     * @var ProductDescriptionRepository
+     */
+    private $descriptionRepository;
+
+    public function __construct(
+        ProductInfoRepository $infoRepository,
+        ProductDescriptionRepository $descriptionRepository
+    ){
+        $this->infoRepository = $infoRepository;
+        $this->descriptionRepository  = $descriptionRepository;
     }
 
     /**
@@ -21,23 +33,15 @@ class ProductService
      */
     public function getProductInfo(int $productId): Product
     {
-        $productData = $this->getProductInfoById($productId);
+        $productData = $this->infoRepository->getProductInfoById($productId);
+        $productDescription = $this->descriptionRepository->getProductDescriptionById($productId);
 
         $product = new Product();
         $product->model = $productData['model'];
         $product->type = $productData['type'];
         $product->manufacturer = $productData['manufacturer'];
+        $product->description = $productDescription['description'];
 
         return $product;
-    }
-
-    /**
-     * @param int $productId
-     * @throws \DomainException
-     * @return array
-     */
-    private function getProductInfoById(int $productId): array
-    {
-        return $this->productRepo->getProductInfoById($productId);
     }
 }

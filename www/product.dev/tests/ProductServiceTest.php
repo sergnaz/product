@@ -5,7 +5,8 @@ namespace Polygon;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Polygon\Entities\Product;
-use Polygon\Repositories\ProductRepository;
+use Polygon\Repositories\ProductDescriptionRepository;
+use Polygon\Repositories\ProductInfoRepository;
 
 class ProductServiceTest extends TestCase
 {
@@ -20,14 +21,23 @@ class ProductServiceTest extends TestCase
     private $productService;
 
     /**
-     * @var MockObject|ProductRepository
+     * @var MockObject|ProductInfoRepository
      */
-    private $productRepositoryMock;
+    private $infoRepositoryMock;
+
+    /**
+     * @var MockObject|ProductDescriptionRepository
+     */
+    private $descriptionRepositoryMock;
 
     protected function setUp(): void
     {
-        $this->productRepositoryMock = $this->createMock(ProductRepository::class);
-        $this->productService = new ProductService($this->productRepositoryMock);
+        $this->infoRepositoryMock = $this->createMock(ProductInfoRepository::class);
+        $this->descriptionRepositoryMock = $this->createMock(ProductDescriptionRepository::class);
+        $this->productService = new ProductService(
+            $this->infoRepositoryMock,
+            $this->descriptionRepositoryMock
+        );
 
         parent::setUp();
     }
@@ -36,7 +46,7 @@ class ProductServiceTest extends TestCase
     {
         unset(
             $this->productService,
-            $this->productRepositoryMock,
+            $this->infoRepositoryMock,
         );
 
         parent::tearDown();
@@ -51,11 +61,13 @@ class ProductServiceTest extends TestCase
         $productLenovo->model = 'ThinkPad E495';
         $productLenovo->type = 'notebook';
         $productLenovo->manufacturer = 'Lenovo';
+        $productLenovo->description = 'It is a description about Lenovo advantages';
 
         $productApple = new Product();
         $productApple->model = 'MacBook Pro';
         $productApple->type = 'notebook';
         $productApple->manufacturer = 'Apple';
+        $productApple->description = 'It is about why MacBook Pro is so cool and expensive';
 
         return [
             [
@@ -64,6 +76,9 @@ class ProductServiceTest extends TestCase
                     'model' => 'ThinkPad E495',
                     'type' => 'notebook',
                     'manufacturer' => 'Lenovo',
+                ],
+                [
+                    'description' => 'It is a description about Lenovo advantages',
                 ],
                 $productLenovo,
             ],
@@ -74,6 +89,9 @@ class ProductServiceTest extends TestCase
                     'type' => 'notebook',
                     'manufacturer' => 'Apple',
                 ],
+                [
+                    'description' => 'It is about why MacBook Pro is so cool and expensive'
+                ],
                 $productApple,
             ]
         ];
@@ -82,21 +100,29 @@ class ProductServiceTest extends TestCase
     /**
      * @dataProvider shortInfoDataProvider
      * @param $productId
-     * @param $product
-     * @param $expectedProduct
+     * @param $productInfo
+     * @param $productDescription
+     * @param Product $expectedProduct
      */
-    public function testGetProductShortInfo($productId, $product, Product $expectedProduct)
-    {
+    public function testGetProductShortInfo(
+        $productId,
+        $productInfo,
+        $productDescription,
+        Product $expectedProduct
+    ){
         //Arrange
-        $this->productRepositoryWillReturn($product);
+        $this->infoRepositoryWillReturn($productInfo);
+        $this->descriptionRepositoryMock
+            ->method('getProductDescriptionById')
+            ->willReturn($productDescription);
 
         //Act
-        $productInfo = $this->productService->getProductInfo($productId);
+        $product = $this->productService->getProductInfo($productId);
 
         //Assert
         $this->assertEquals(
             $expectedProduct,
-            $productInfo
+            $product
         );
     }
 
@@ -113,16 +139,16 @@ class ProductServiceTest extends TestCase
         $this->productService->getProductInfo(self::NOT_FOUND_PRODUCT_ID);
     }
 
-    private function productRepositoryWillReturn($product): void
+    private function infoRepositoryWillReturn($product): void
     {
-        $this->productRepositoryMock
+        $this->infoRepositoryMock
             ->method(self::getProductInfoByIdMethod)
             ->willReturn($product);
     }
 
     private function productRepositoryWillThrowNotFountException(): void
     {
-        $this->productRepositoryMock
+        $this->infoRepositoryMock
             ->method(self::getProductInfoByIdMethod)
             ->willThrowException(new \DomainException('Product not exist'));
     }

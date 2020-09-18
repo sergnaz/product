@@ -9,4 +9,5 @@ class Product
     public $model;
     public $type;
     public $manufacturer;
+    public $description;
 }
