@@ -1,0 +1,4 @@
+.idea
+www/product.dev/vendor/
+logs/*
+mysql/*
