@@ -8,6 +8,11 @@ use Polygon\Repositories\ProductRepository;
 
 class ProductServiceTest extends TestCase
 {
+    const getProductInfoByIdMethod = 'getProductInfoById';
+    const NOT_FOUND_PRODUCT_ID = 404;
+    const LENOVO_PRODUCT_ID = 1;
+    const APPLE_PRODUCT_ID = 2;
+
     /**
      * @var ProductService
      */
@@ -28,22 +33,23 @@ class ProductServiceTest extends TestCase
 
     protected function tearDown(): void
     {
-        unset($this->productService);
+        unset(
+            $this->productService,
+            $this->productRepositoryMock,
+        );
+
         parent::tearDown();
     }
 
     public function testGetProductShortInfo()
     {
-        $this->productRepositoryMock
-            ->method('getProductInfoById')
-            ->willReturn([
-                'model' => 'ThinkPad E495',
-                'type' => 'notebook',
-                'manufacturer' => 'Lenovo',
-            ]);
+        //Arrange
+        $this->productRepositoryWillReturnLenovo();
 
-        $productInfo = $this->productService->getProductInfo(1);
+        //Act
+        $productInfo = $this->productService->getProductInfo(self::LENOVO_PRODUCT_ID);
 
+        //Assert
         $this->assertJsonStringEqualsJsonString(
             json_encode([
                 'model' => 'ThinkPad E495',
@@ -56,16 +62,13 @@ class ProductServiceTest extends TestCase
 
     public function testGetSecondProductShortInfo()
     {
-        $this->productRepositoryMock
-            ->method('getProductInfoById')
-            ->willReturn([
-                'model' => 'MacBook Pro',
-                'type' => 'notebook',
-                'manufacturer' => 'Apple',
-            ]);
+        //Arrange
+        $this->productRepositoryWillReturnApple();
 
-        $productInfo = $this->productService->getProductInfo(2);
+        //Act
+        $productInfo = $this->productService->getProductInfo(self::APPLE_PRODUCT_ID);
 
+        //Assert
         $this->assertJsonStringEqualsJsonString(
             json_encode([
                 'model' => 'MacBook Pro',
@@ -78,12 +81,43 @@ class ProductServiceTest extends TestCase
 
     public function testNonExistProduct()
     {
-        $this->productRepositoryMock
-            ->method('getProductInfoById')
-            ->willThrowException(new \DomainException('Product not exist'));
+        //Arrange
+        $this->productRepositoryWillThrowNotFountException();
+
+        //Act
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage("Product not exist");
 
-        $this->productService->getProductInfo(404);
+        //Assert
+        $this->productService->getProductInfo(self::NOT_FOUND_PRODUCT_ID);
+    }
+
+    private function productRepositoryWillReturnLenovo(): void
+    {
+        $this->productRepositoryMock
+            ->method(self::getProductInfoByIdMethod)
+            ->willReturn([
+                'model' => 'ThinkPad E495',
+                'type' => 'notebook',
+                'manufacturer' => 'Lenovo',
+            ]);
+    }
+
+    private function productRepositoryWillReturnApple(): void
+    {
+        $this->productRepositoryMock
+            ->method(self::getProductInfoByIdMethod)
+            ->willReturn([
+                'model' => 'MacBook Pro',
+                'type' => 'notebook',
+                'manufacturer' => 'Apple',
+            ]);
+    }
+
+    private function productRepositoryWillThrowNotFountException(): void
+    {
+        $this->productRepositoryMock
+            ->method(self::getProductInfoByIdMethod)
+            ->willThrowException(new \DomainException('Product not exist'));
     }
 }
