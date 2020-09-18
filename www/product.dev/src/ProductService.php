@@ -2,6 +2,8 @@
 
 namespace Polygon;
 
+use Polygon\Repositories\ProductRepository;
+
 class ProductService
 {
     /**
@@ -22,21 +24,8 @@ class ProductService
      */
     private function getProductInfoById(int $productId): array
     {
-        if ($productId == 1) {
-            $productData = [
-                'model' => 'ThinkPad E495',
-                'type' => 'notebook',
-                'manufacturer' => 'Lenovo',
-            ];
-        } elseif ($productId == 2) {
-            $productData = [
-                'model' => 'MacBook Pro',
-                'type' => 'notebook',
-                'manufacturer' => 'Apple',
-            ];
-        } else {
-            throw new \DomainException("Product not exist");
-        }
-        return $productData;
+        $productRepo = new ProductRepository();
+
+        return $productRepo->getProductInfoById($productId);
     }
 }
