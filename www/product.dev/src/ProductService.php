@@ -1,9 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Polygon;
 
 use Polygon\Entities\Product;
 use Polygon\Repositories\ProductDescriptionRepository;
+use Polygon\Repositories\ProductImagesRepository;
 use Polygon\Repositories\ProductInfoRepository;
 
 class ProductService
@@ -18,12 +19,19 @@ class ProductService
      */
     private $descriptionRepository;
 
+    /**
+     * @var ProductImagesRepository
+     */
+    private $productImagesRepository;
+
     public function __construct(
         ProductInfoRepository $infoRepository,
-        ProductDescriptionRepository $descriptionRepository
+        ProductDescriptionRepository $descriptionRepository,
+        ProductImagesRepository $productImagesRepository
     ){
         $this->infoRepository = $infoRepository;
         $this->descriptionRepository  = $descriptionRepository;
+        $this->productImagesRepository = $productImagesRepository;
     }
 
     /**
@@ -35,12 +43,14 @@ class ProductService
     {
         $productData = $this->infoRepository->getProductInfoById($productId);
         $productDescription = $this->descriptionRepository->getProductDescriptionById($productId);
+        $productPhotos = $this->productImagesRepository->getImagesByProductId($productId);
 
         $product = new Product();
         $product->model = $productData['model'];
         $product->type = $productData['type'];
         $product->manufacturer = $productData['manufacturer'];
         $product->description = $productDescription['description'];
+        $product->photos = $productPhotos;
 
         return $product;
     }

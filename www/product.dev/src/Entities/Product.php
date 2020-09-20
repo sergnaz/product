@@ -10,4 +10,5 @@ class Product
     public $type;
     public $manufacturer;
     public $description;
+    public $photos;
 }

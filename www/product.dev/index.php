@@ -2,13 +2,15 @@
 
 use Polygon\ProductService;
 use Polygon\Repositories\ProductDescriptionRepository;
+use Polygon\Repositories\ProductImagesRepository;
 use Polygon\Repositories\ProductInfoRepository;
 
 include 'vendor/autoload.php';
 
     $product = new ProductService(
         new ProductInfoRepository(),
-        new ProductDescriptionRepository()
+        new ProductDescriptionRepository(),
+        new ProductImagesRepository()
     );
 
     header('Content-Type: application/json');

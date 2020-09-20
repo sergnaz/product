@@ -2,10 +2,12 @@
 
 namespace Polygon;
 
+use DomainException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Polygon\Entities\Product;
 use Polygon\Repositories\ProductDescriptionRepository;
+use Polygon\Repositories\ProductImagesRepository;
 use Polygon\Repositories\ProductInfoRepository;
 
 class ProductServiceTest extends TestCase
@@ -30,13 +32,20 @@ class ProductServiceTest extends TestCase
      */
     private $descriptionRepositoryMock;
 
+    /**
+     * @var ProductImagesRepository
+     */
+    private $productImagesRepositoryMock;
+
     protected function setUp(): void
     {
         $this->infoRepositoryMock = $this->createMock(ProductInfoRepository::class);
         $this->descriptionRepositoryMock = $this->createMock(ProductDescriptionRepository::class);
+        $this->productImagesRepositoryMock = $this->createMock(ProductImagesRepository::class);
         $this->productService = new ProductService(
             $this->infoRepositoryMock,
-            $this->descriptionRepositoryMock
+            $this->descriptionRepositoryMock,
+            $this->productImagesRepositoryMock
         );
 
         parent::setUp();
@@ -62,12 +71,21 @@ class ProductServiceTest extends TestCase
         $productLenovo->type = 'notebook';
         $productLenovo->manufacturer = 'Lenovo';
         $productLenovo->description = 'It is a description about Lenovo advantages';
+        $productLenovo->photos = [
+            'Large.jpg',
+            'Thumb.jpg',
+        ];
 
         $productApple = new Product();
         $productApple->model = 'MacBook Pro';
         $productApple->type = 'notebook';
         $productApple->manufacturer = 'Apple';
         $productApple->description = 'It is about why MacBook Pro is so cool and expensive';
+        $productApple->photos = [
+            'Steve Jobs recommends.jpg',
+            'MacBookPro.jpg',
+            'Monitor.jpg',
+        ];
 
         return [
             [
@@ -80,6 +98,10 @@ class ProductServiceTest extends TestCase
                 [
                     'description' => 'It is a description about Lenovo advantages',
                 ],
+                [
+                    'Large.jpg',
+                    'Thumb.jpg',
+                ],
                 $productLenovo,
             ],
             [
@@ -90,7 +112,12 @@ class ProductServiceTest extends TestCase
                     'manufacturer' => 'Apple',
                 ],
                 [
-                    'description' => 'It is about why MacBook Pro is so cool and expensive'
+                    'description' => 'It is about why MacBook Pro is so cool and expensive',
+                ],
+                [
+                    'Steve Jobs recommends.jpg',
+                    'MacBookPro.jpg',
+                    'Monitor.jpg',
                 ],
                 $productApple,
             ]
@@ -102,19 +129,26 @@ class ProductServiceTest extends TestCase
      * @param $productId
      * @param $productInfo
      * @param $productDescription
+     * @param $photos
      * @param Product $expectedProduct
      */
     public function testGetProductShortInfo(
         $productId,
         $productInfo,
         $productDescription,
+        $photos,
         Product $expectedProduct
     ){
         //Arrange
-        $this->infoRepositoryWillReturn($productInfo);
+        $this->infoRepositoryWillReturn($productInfo, $productId);
         $this->descriptionRepositoryMock
             ->method('getProductDescriptionById')
+            ->with($productId)
             ->willReturn($productDescription);
+        $this->productImagesRepositoryMock
+            ->method('getImagesByProductId')
+            ->with($productId)
+            ->willReturn($photos);
 
         //Act
         $product = $this->productService->getProductInfo($productId);
@@ -132,17 +166,18 @@ class ProductServiceTest extends TestCase
         $this->productRepositoryWillThrowNotFountException();
 
         //Act
-        $this->expectException(\DomainException::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionMessage("Product not exist");
 
         //Assert
         $this->productService->getProductInfo(self::NOT_FOUND_PRODUCT_ID);
     }
 
-    private function infoRepositoryWillReturn($product): void
+    private function infoRepositoryWillReturn($product, $productId): void
     {
         $this->infoRepositoryMock
             ->method(self::getProductInfoByIdMethod)
+            ->with($productId)
             ->willReturn($product);
     }
 
@@ -150,6 +185,6 @@ class ProductServiceTest extends TestCase
     {
         $this->infoRepositoryMock
             ->method(self::getProductInfoByIdMethod)
-            ->willThrowException(new \DomainException('Product not exist'));
+            ->willThrowException(new DomainException('Product not exist'));
     }
 }
