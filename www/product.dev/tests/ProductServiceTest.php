@@ -9,6 +9,7 @@ use Polygon\Entities\Product;
 use Polygon\Repositories\ProductDescriptionRepository;
 use Polygon\Repositories\ProductImagesRepository;
 use Polygon\Repositories\ProductInfoRepository;
+use Polygon\Repositories\ProductVideosRepository;
 
 class ProductServiceTest extends TestCase
 {
@@ -33,19 +34,27 @@ class ProductServiceTest extends TestCase
     private $descriptionRepositoryMock;
 
     /**
-     * @var ProductImagesRepository
+     * @var MockObject|ProductImagesRepository
      */
     private $productImagesRepositoryMock;
+
+    /**
+     * @var MockObject|ProductVideosRepository
+     */
+    private $productVideosRepositoryMock;
 
     protected function setUp(): void
     {
         $this->infoRepositoryMock = $this->createMock(ProductInfoRepository::class);
         $this->descriptionRepositoryMock = $this->createMock(ProductDescriptionRepository::class);
         $this->productImagesRepositoryMock = $this->createMock(ProductImagesRepository::class);
+        $this->productVideosRepositoryMock = $this->createMock(ProductVideosRepository::class);
+
         $this->productService = new ProductService(
             $this->infoRepositoryMock,
             $this->descriptionRepositoryMock,
-            $this->productImagesRepositoryMock
+            $this->productImagesRepositoryMock,
+            $this->productVideosRepositoryMock
         );
 
         parent::setUp();
@@ -75,6 +84,9 @@ class ProductServiceTest extends TestCase
             'Large.jpg',
             'Thumb.jpg',
         ];
+        $productLenovo->videos = [
+            'review about ThinkPad.avi'
+        ];
 
         $productApple = new Product();
         $productApple->model = 'MacBook Pro';
@@ -85,6 +97,10 @@ class ProductServiceTest extends TestCase
             'Steve Jobs recommends.jpg',
             'MacBookPro.jpg',
             'Monitor.jpg',
+        ];
+        $productApple->videos = [
+            'About MacBookPro.avi',
+            'Review by Max.avi'
         ];
 
         return [
@@ -101,6 +117,9 @@ class ProductServiceTest extends TestCase
                 [
                     'Large.jpg',
                     'Thumb.jpg',
+                ],
+                [
+                    'review about ThinkPad.avi',
                 ],
                 $productLenovo,
             ],
@@ -119,6 +138,10 @@ class ProductServiceTest extends TestCase
                     'MacBookPro.jpg',
                     'Monitor.jpg',
                 ],
+                [
+                    'About MacBookPro.avi',
+                    'Review by Max.avi'
+                ],
                 $productApple,
             ]
         ];
@@ -130,6 +153,7 @@ class ProductServiceTest extends TestCase
      * @param $productInfo
      * @param $productDescription
      * @param $photos
+     * @param $videos
      * @param Product $expectedProduct
      */
     public function testGetProductShortInfo(
@@ -137,6 +161,7 @@ class ProductServiceTest extends TestCase
         $productInfo,
         $productDescription,
         $photos,
+        $videos,
         Product $expectedProduct
     ){
         //Arrange
@@ -149,6 +174,10 @@ class ProductServiceTest extends TestCase
             ->method('getImagesByProductId')
             ->with($productId)
             ->willReturn($photos);
+        $this->productVideosRepositoryMock
+            ->method('getVideosByProductId')
+            ->with($productId)
+            ->willReturn($videos);
 
         //Act
         $product = $this->productService->getProductInfo($productId);

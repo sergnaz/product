@@ -6,6 +6,7 @@ use Polygon\Entities\Product;
 use Polygon\Repositories\ProductDescriptionRepository;
 use Polygon\Repositories\ProductImagesRepository;
 use Polygon\Repositories\ProductInfoRepository;
+use Polygon\Repositories\ProductVideosRepository;
 
 class ProductService
 {
@@ -24,14 +25,21 @@ class ProductService
      */
     private $productImagesRepository;
 
+    /**
+     * @var ProductVideosRepository
+     */
+    private $productVideosRepository;
+
     public function __construct(
         ProductInfoRepository $infoRepository,
         ProductDescriptionRepository $descriptionRepository,
-        ProductImagesRepository $productImagesRepository
+        ProductImagesRepository $productImagesRepository,
+        ProductVideosRepository $productVideosRepository
     ){
         $this->infoRepository = $infoRepository;
         $this->descriptionRepository  = $descriptionRepository;
         $this->productImagesRepository = $productImagesRepository;
+        $this->productVideosRepository = $productVideosRepository;
     }
 
     /**
@@ -44,6 +52,7 @@ class ProductService
         $productData = $this->infoRepository->getProductInfoById($productId);
         $productDescription = $this->descriptionRepository->getProductDescriptionById($productId);
         $productPhotos = $this->productImagesRepository->getImagesByProductId($productId);
+        $productVideos = $this->productVideosRepository->getVideosByProductId($productId);
 
         $product = new Product();
         $product->model = $productData['model'];
@@ -51,6 +60,7 @@ class ProductService
         $product->manufacturer = $productData['manufacturer'];
         $product->description = $productDescription['description'];
         $product->photos = $productPhotos;
+        $product->videos = $productVideos;
 
         return $product;
     }
